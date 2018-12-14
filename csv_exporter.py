@@ -11,7 +11,7 @@ import collections
 
 client = MongoClient('localhost', 27017)
 db = client.sc2reps
-collection = db.basic_db_rev22
+collection = db.basic_db_sonata2_rev1
 
 # TODO: update exporter explanation and translate to ENG
 '''
@@ -27,6 +27,7 @@ Sekwencja agregacji danych:
 '''
 
 # key = PId, value = [group (1-static;2-random), sex (1-male;2-female)]
+# SONATA1
 pids = {
     '301': ['2','1'],
     '302': ['2','1'],
@@ -88,7 +89,28 @@ pids = {
     '365': ['1','2'],
     '366': ['1','2'],
     '368': ['2','2'],
-    '370': ['2','1']
+    '370': ['2','1'],
+# SONATA2
+    '3002':['2','1'],
+    '3004':['2','1'],
+    '3005':['2','1'],
+    '3006':['2','2'],
+    '3008':['2','2'],
+    '3011':['2','2'],
+    '3012':['2','2'],
+    '3013':['2','2'],
+    '3014':['2','2'],
+    '3015':['2','2'],
+    '3016':['2','2'],
+    '3017':['2','2'],
+    '3018':['2','1'],
+    '3020':['2','2'],
+    '3021':['2','1'],
+    '3022':['2','2'],
+    '3023':['2','1'],
+    '3024':['2','2'],
+    '3025':['2','2'],
+    '3026':['2','1']
 }
 
 difficultyLevels = [
@@ -199,7 +221,7 @@ for pid in pids:
             "count": {"$sum": 1}
         }}
     ]
-    winLossCount = list(db.basic_db.aggregate(pipeline_winLossRatio))
+    winLossCount = list(db.basic_db_sonata2_rev1.aggregate(pipeline_winLossRatio))
 
     tmpWins = next((item for item in winLossCount if item["_id"] == "Win"), 0)
 
@@ -214,18 +236,22 @@ for pid in pids:
         }},
         {"$group": {
             "_id": "$aiDifficulty",
-            "count": {"$sum": 1}
+            "count": {"$sum": 1},
+            "time": {"$sum": "$matchLengthRealTime"}
         }}
     ]
-    difficultyLevelsCount = list(db.basic_db.aggregate(pipeline_difficultyLevels))
+
+    difficultyLevelsCount = list(db.basic_db_sonata2_rev1.aggregate(pipeline_difficultyLevels))
 
     for lvl in difficultyLevels:
         tmpDiffLvlCount = next((item for item in difficultyLevelsCount if item["_id"] == lvl), [])
 
         if len(tmpDiffLvlCount) > 0:
-            output['trainingMatchesLvl_'+lvl.replace(' ','_').replace('(','').replace(')','')] = tmpDiffLvlCount['count']
+            output['trainingMatchesLvl_Count_'+lvl.replace(' ','_').replace('(','').replace(')','')] = tmpDiffLvlCount['count']
+            output['trainingMatchesLvl_Time_'+lvl.replace(' ','_').replace('(','').replace(')','')] = tmpDiffLvlCount['time']
         else:
-            output['trainingMatchesLvl_' + lvl.replace(' ', '_').replace('(','').replace(')','')] = 0
+            output['trainingMatchesLvl_Count_' + lvl.replace(' ', '_').replace('(','').replace(')','')] = 0
+            output['trainingMatchesLvl_Time_' + lvl.replace(' ', '_').replace('(','').replace(')','')] = 0.0
 
     # Total matches real time
     pipeline_trainingTime = [
@@ -237,7 +263,7 @@ for pid in pids:
             "total": {"$sum": "$matchLengthRealTime"}
         }}
     ]
-    output['trainingTime'] = list(db.basic_db.aggregate(pipeline_trainingTime))[0]['total']
+    output['trainingTime'] = list(db.basic_db_sonata2_rev1.aggregate(pipeline_trainingTime))[0]['total']
 
     # Calculate values for whole training time and in quaters
     quarterTime = output['trainingTime'] / 4

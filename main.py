@@ -18,10 +18,13 @@ from sc2reader.events import PlayerStatsEvent, UnitBornEvent, UnitDiedEvent, Uni
 # ======================================================================================================================
 
 # Source of replay files
-source_path = "reps/"
+source_path = "reps_sonata2/"
 
 # Used for debugging when filtering out replay files (cleanup)
-file_search_stats = [0,0,0,0]
+file_search_stats = {
+    "single": 0,
+    "double": 0
+    }
 file_search_duplicates_timestamps = []
 
 # ======================================================================================================================
@@ -417,19 +420,28 @@ for rep in os.listdir(source_path):
 # Build the basic output from rep file
 # ======================================================================================================================
 
-        playerNamesAndPids = {'glabII':'302','glabIII':'303','glabIV':'304','glabV': '305?','glabVI': '306','glabVII':'305',
-                            'glabVIII': '308','glabIX':'309','glabX': '310','glabXI':'307','glabXII':'312','glabXIII':'313?',
-                            'glabXIV':'314','glabXV':'315','glabXVI':'316','glabXVII':'317','glabXVIII':'318','glabXIX':'319',
-                            'glabXX':'320','glabXXI':'321','glabXXII':'322','glabXXIII':'323','glabXXIV':'324','glabXXV':'325',
-                            'glabXXVI':'326','glabXXVII':'327','glabXXVIII':'328','glabXXIX':'329','glabXXX':'330','glabXXXI':'331?',
-                            'glabXXXII':'332','glabXXXIII':'333?','glabXXXIV':'334','glabXXXV':'335','glabXXXVI':'336','glabXXXVII':'337?',
-                            'glabXXXVIII':'338','glXXXVIII':'338?','glabXXXIX':'339','glabXL' : '340?','glabXLI':'341',
-                            'glabXLII':'342','glabXLIII':'343','glabXLIV':'344?','glabXLV':'345','glabXLVI':'346','glabXLVII':'347',
-                            'glabXLVIII':'348?','glabXLIX':'349','glabL':'350','glabLI':'351','glabLII':'352','glabLIII':'353',
-                            'glabLIV':'354','glabLV':'355','glabLVI':'356','glabLVII':'357','glabLVIII':'358','glabLVIX':'359',
-                            'glabLIX': '359?','glabLX':'360','glabLXI': '361','glabLXII':'362','glabLXIII':'363','glabLXIV':'364',
-                            'glabLXV':'365','glabLXVI':'366','glabLXVII':'367?','glabLXVIII': '368','glabLXIX': '301','glabLXX': '370',
-                            'glabLXXVI': '371?','glabLXXVII': '372?','glabLXXIII': '373?','glabLXXIV': '374?','glabLXXV': '344',}
+# SONATA1
+        playerNamesAndPids = {
+            'glabII':'302','glabIII':'303','glabIV':'304','glabV': '305?','glabVI': '306','glabVII':'305',
+            'glabVIII': '308','glabIX':'309','glabX': '310','glabXI':'307','glabXII':'312','glabXIII':'313?',
+            'glabXIV':'314','glabXV':'315','glabXVI':'316','glabXVII':'317','glabXVIII':'318','glabXIX':'319',
+            'glabXX':'320','glabXXI':'321','glabXXII':'322','glabXXIII':'323','glabXXIV':'324','glabXXV':'325',
+            'glabXXVI':'326','glabXXVII':'327','glabXXVIII':'328','glabXXIX':'329','glabXXX':'330','glabXXXI':'331?',
+            'glabXXXII':'332','glabXXXIII':'333?','glabXXXIV':'334','glabXXXV':'335','glabXXXVI':'336',
+            'glabXXXVII':'337?','glabXXXVIII':'338','glXXXVIII':'338?','glabXXXIX':'339','glabXL' : '340?',
+            'glabXLI':'341','glabXLII':'342','glabXLIII':'343','glabXLIV':'344?','glabXLV':'345','glabXLVI':'346',
+            'glabXLVII':'347','glabXLVIII':'348?','glabXLIX':'349','glabL':'350','glabLI':'351','glabLII':'352',
+            'glabLIII':'353','glabLIV':'354','glabLV':'355','glabLVI':'356','glabLVII':'357','glabLVIII':'358',
+            'glabLVIX':'359','glabLIX': '359?','glabLX':'360','glabLXI': '361','glabLXII':'362','glabLXIII':'363',
+            'glabLXIV':'364','glabLXV':'365','glabLXVI':'366','glabLXVII':'367?','glabLXVIII': '368','glabLXIX': '301',
+            'glabLXX': '370','glabLXXVI': '371?','glabLXXVII': '372?','glabLXXIII': '373?','glabLXXIV': '374?',
+            'glabLXXV': '344',
+# SONATA2
+            'glabCII':'3002','glabCIV':'3004','glabCV':'3005','glabCVI':'3006','glabCVIII':'3008',
+            'glabCXI':'3011','glabCXII':'3012','glabCXIII':'3013','glabCXIV':'3014','glabCXV':'3015',
+            'glabCXVI':'3016','GlabCXVII':'3017','glabCXVIII':'3018','glabCXX':'3020','glabCXXI':'3021',
+            'glabCXXII':'3022','glabCXXIII':'3023','glabCXXIV':'3024','glabCXXV':'3025','glabCXXVI':'3026'
+        }
 
         # Main dict for storage of exported data
         output_basic = {}
@@ -661,38 +673,33 @@ for rep in os.listdir(source_path):
         # basic_db_rev22 -
 
         collection_src = db.basic_db
-        collection_tgt = db.basic_db_rev22
+        collection_tgt = db.basic_db_sonata2_rev1
 
         # Compare processed file timestamp with collection timestamp
         # If there is one, make sure it's the only one
-        find_result = collection_src.find({'matchStartDateTime':output_basic['matchStartDateTime']})
+        find_result = collection_tgt.find({'matchStartDateTime':output_basic['matchStartDateTime']})
 
-        if find_result.count() == 0:
-            file_search_stats[0] += 1
-            #removeFromReps = True
-        elif find_result.count() > 0:
-            output_basic['participantId'] = find_result[0]['participantId']
-            output_basic['playerName'] = find_result[0]['playerName']
-            if find_result.count() == 1:
-                file_search_stats[1] += 1
-                object_id = collection_tgt.insert_one(output_basic).inserted_id
-            elif find_result.count() == 2:
-                file_search_stats[2] += 1
-                if output_basic['matchStartDateTime'] not in file_search_duplicates_timestamps:
-                    file_search_duplicates_timestamps.append(output_basic['matchStartDateTime'])
-                    object_id = collection_tgt.insert_one(output_basic).inserted_id
-                else:
-                    removeFromReps = True
+        if find_result.count() > 0:
+            file_search_stats["double"] += 1
+            removeFromReps = True
+            if output_basic['matchStartDateTime'] not in file_search_duplicates_timestamps:
+                file_search_duplicates_timestamps.append(output_basic['matchStartDateTime'])
+        elif find_result.count() == 0:
+            file_search_stats["single"] += 1
+            object_id = collection_tgt.insert_one(output_basic).inserted_id
 
         # Output data imported to the DB at this point, release file handle
         fh.close()
         print ("File handle released, bye\n****************************")
 
         if removeFromReps:
-            #os.remove(fh.name)
-            print ("File removed.")
+            print ("File removed: " + fh.name)
+            os.remove(fh.name)
+
+        client.close()
 
 print (file_search_stats)
+print (file_search_duplicates_timestamps)
 print ("All went well")
 
 # EOF
