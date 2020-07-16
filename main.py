@@ -18,7 +18,7 @@ from sc2reader.events import PlayerStatsEvent, UnitBornEvent, UnitDiedEvent, Uni
 # ======================================================================================================================
 
 # Source of replay files
-source_path = "reps_sonata2/"
+source_path = "reps_opus/"
 
 # Used for debugging when filtering out replay files (cleanup)
 file_search_stats = {
@@ -336,7 +336,7 @@ for rep in os.listdir(source_path):
 
         handlers = [handle_expansion_events, handle_worker_events, handle_supply_events, handle_mineral_events,
                     handle_vespene_events, handle_ground_events, handle_air_events, handle_tech_events, handle_upgrade_events,
-                    handle_unit_events]# , handle_hotkeys_events]
+                    handle_unit_events, handle_hotkeys_events]
 
 # ======================================================================================================================
 # ReplayData class to structure and process replay files
@@ -673,7 +673,7 @@ for rep in os.listdir(source_path):
         # basic_db_rev22 -
 
         collection_src = db.basic_db
-        collection_tgt = db.basic_db_sonata2_rev1
+        collection_tgt = db.basic_opus
 
         # Compare processed file timestamp with collection timestamp
         # If there is one, make sure it's the only one
